@@ -349,7 +349,6 @@ for threshold in thresholds:
     true_labels=np.array(df_img.drop(['FileName', 'TAG'], axis=1))
 
 
-
     output = model(input_tensor)
     print(f'Class {target_class+1} guess is=', str(np.array(torch.sigmoid(output[0][target_class])>threshold)))
     
