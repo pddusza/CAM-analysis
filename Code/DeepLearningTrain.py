@@ -61,9 +61,9 @@ class ImageDataset(Dataset):
             # transforms.RandomPerspective(distortion_scale=0.1),
             # #transforms.ElasticTransform(alpha=50, sigma=5.0),
             # transforms.GaussianBlur(kernel_size=(3, 3), sigma=(0.1, 0.3)),
-            # transforms.Grayscale(num_output_channels=3),
+            transforms.Grayscale(num_output_channels=3),
             # transforms.ColorJitter(brightness=(0.8,1.2), contrast=0.2, saturation=(0.1,0.2), hue=(-0.1,0.1)),
-            # transforms.ToTensor(),
+            transforms.ToTensor(),
             # #transforms.Normalize(mean=mean, std=std) #does not work with PIL image, uzywam PIL na import, trzeba simpleITK
         ])
         image = self.transform(image)

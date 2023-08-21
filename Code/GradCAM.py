@@ -221,7 +221,7 @@ def get_args():
     parser.add_argument(
         '--image-path',
         type=str,
-        default=f"/OLD-DATA-STOR/HESSO_Internship_2023/Piotr/Multi_Label_dataset/Images/SO-0641-0001-0001.dcm.png",
+        default=f"/OLD-DATA-STOR/HESSO_Internship_2023/Piotr/Multi_Label_dataset/Images/IM-0140-0002.dcm.png",
         help='Input image path')
     parser.add_argument('--aug-smooth', action='store_true',
                         help='Apply test time augmentation to smooth the CAM')
@@ -300,8 +300,8 @@ if __name__ == '__main__':
     # the Class Activation Maps for.
     # If targets is None, the highest scoring category (for every member in the batch) will be used.
     # You can target specific categories by
-    # targets = [e.g ClassifierOutputTarget(range of classes 0-10)]
-    targets = [ClassifierOutputTarget(1)]
+    # targets = [e.g ClassifierOutputTarget(range of classes 0-9)]
+    targets = [ClassifierOutputTarget(6)]
 
     # Using the with statement ensures the context is freed, and you can
     # recreate different CAM objects in a loop.
@@ -321,14 +321,30 @@ if __name__ == '__main__':
                                 eigen_smooth=args.eigen_smooth)
 
             grayscale_cam = grayscale_cam[0, :]
+            np.divide(grayscale_cam, np.max(grayscale_cam))
+            
+            mask = grayscale_cam > 0.7
 
-            cam_image = show_cam_on_image(rgb_img, grayscale_cam, use_rgb=True)
-            cam_image = cv2.cvtColor(cam_image, cv2.COLOR_RGB2BGR)
+            # Apply the mask to the array to filter out smaller values
+            grayscale_camm = np.where(mask, grayscale_cam, 0)
+
+
+            # Define the Gaussian blur parameters
+            kernel_size = (15, 15)  # Size of the Gaussian kernel
+            sigma_x = 5             # Standard deviation along X-axis (automatically calculated based on kernel size)
+            # Apply Gaussian blur
+            grayscale_camm = cv2.GaussianBlur(grayscale_camm, kernel_size, sigma_x)
+
+
+            #IMPORTANT  - in order to show good images for just numbers in name, image must be cubed
+            cam_image = show_cam_on_image(rgb_img**1, grayscale_camm**2.5, use_rgb=False, colormap = cv2.COLORMAP_TURBO, image_weight = 0.75)
+            heatmap=show_cam_on_image(rgb_img**1, grayscale_camm**2.5, use_rgb=False, colormap = cv2.COLORMAP_TURBO, image_weight = 0)
+            #cam_image = cv2.cvtColor(cam_image, cv2.COLOR_RGB2BGR)
 
         gb_model = GuidedBackpropReLUModel(model=model, use_cuda=args.use_cuda)
         gb = gb_model(input_tensor, target_category=None)
 
-        cam_mask = cv2.merge([grayscale_cam, grayscale_cam, grayscale_cam])
+        cam_mask = cv2.merge([grayscale_camm, grayscale_camm, grayscale_camm])
         cam_gb = deprocess_image(cam_mask * gb)
         gb = deprocess_image(gb)
 
@@ -336,11 +352,10 @@ if __name__ == '__main__':
 
         cam_output_path = os.path.join(args.output_dir, f'{method_name}_cam.jpg')
         gb_output_path = os.path.join(args.output_dir, f'{method_name}_gb.jpg')
-        cam_gb_output_path = os.path.join(args.output_dir, f'{method_name}_cam_gb.jpg')
-
+        cam_gb_output_path = os.path.join(args.output_dir, f'{method_name}_heatmap.jpg')
         cv2.imwrite(cam_output_path, cam_image)
         #cv2.imwrite(gb_output_path, gb)
-        #cv2.imwrite(cam_gb_output_path, cam_gb)
+        cv2.imwrite(cam_gb_output_path, heatmap)
 
 
 

@@ -24,7 +24,7 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 model = models.resnet18(pretrained=False)
 model.fc = nn.Linear(model.fc.in_features, 10)
-model.load_state_dict(torch.load('/OLD-DATA-STOR/HESSO_Internship_2023/Piotr/Code/Testing/end model, oversampled good mesophagus 08-08.pth'))
+model.load_state_dict(torch.load('/OLD-DATA-STOR/HESSO_Internship_2023/Piotr/Code/final model, oversampled 08-08.pth'))
 batch_size=64
 
 model.to(device)  # Move the model to the GPU
